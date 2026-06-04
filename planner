@@ -1,0 +1,1440 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>💸 My Budget Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Nunito+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f0f14;
+    --surface: #17171f;
+    --surface2: #1e1e2a;
+    --surface3: #252535;
+    --border: #2e2e42;
+    --accent: #a78bfa;
+    --accent2: #34d399;
+    --accent3: #f472b6;
+    --accent4: #fb923c;
+    --text: #f0f0ff;
+    --text2: #9191b4;
+    --text3: #5c5c7a;
+    --danger: #f87171;
+    --warning: #fbbf24;
+    --success: #34d399;
+    --radius: 14px;
+    --radius-sm: 8px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Nunito Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 14px;
+  }
+  h1,h2,h3,h4 { font-family: 'Nunito', sans-serif; }
+
+  .nav {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 0;
+    padding: 0 16px;
+    overflow-x: auto;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .nav-brand {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 16px;
+    color: var(--accent);
+    padding: 16px 16px 16px 0;
+    white-space: nowrap;
+    border-right: 1px solid var(--border);
+    margin-right: 12px;
+  }
+  .nav-btn {
+    background: none;
+    border: none;
+    color: var(--text2);
+    font-family: 'Nunito Sans', sans-serif;
+    font-size: 13px;
+    padding: 18px 14px;
+    cursor: pointer;
+    white-space: nowrap;
+    border-bottom: 2px solid transparent;
+    transition: all .2s;
+  }
+  .nav-btn:hover { color: var(--text); }
+  .nav-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .nav-actions { margin-left: auto; display: flex; gap: 8px; align-items: center; }
+  .btn-backup, .btn-restore {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text2);
+    font-size: 12px;
+    padding: 6px 12px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    font-family: 'Nunito Sans', sans-serif;
+    transition: all .2s;
+    white-space: nowrap;
+  }
+  .btn-backup:hover { color: var(--accent); border-color: var(--accent); }
+  .btn-restore:hover { color: var(--accent2); border-color: var(--accent2); }
+
+  .container { max-width: 1100px; margin: 0 auto; padding: 24px 16px; }
+  .section { display: none; }
+  .section.active { display: block; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+  }
+  .card-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .08em;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-bottom: 4px;
+    font-family: 'Nunito', sans-serif;
+  }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  @media(max-width:700px) {
+    .grid-2,.grid-3,.grid-4 { grid-template-columns: 1fr 1fr; }
+  }
+  @media(max-width:480px) {
+    .grid-2,.grid-3,.grid-4 { grid-template-columns: 1fr; }
+  }
+
+  .balance-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 18px;
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    transition: border-color .2s, transform .15s;
+  }
+  .balance-card:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .balance-card .icon { font-size: 24px; margin-bottom: 10px; }
+  .balance-card .label {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-bottom: 4px;
+    font-family: 'Nunito', sans-serif;
+  }
+  .balance-card .amount-actual {
+    font-family: 'Nunito', sans-serif;
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--text);
+  }
+  .balance-card .amount-stated {
+    font-size: 12px;
+    color: var(--text3);
+    margin-top: 2px;
+    font-family: 'Nunito Sans', sans-serif;
+  }
+  .balance-card .amount-stated span { color: var(--accent3); }
+  .balance-card::after {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 60px; height: 60px;
+    border-radius: 50%;
+    opacity: .07;
+    transform: translate(20px, -20px);
+  }
+  .bc-cash::after { background: var(--accent2); }
+  .bc-land::after { background: var(--accent); }
+  .bc-metro::after { background: var(--accent3); }
+  .bc-gcash::after { background: var(--accent4); }
+
+  .modal-overlay {
+    display: none;
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.7);
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px;
+    width: 100%;
+    max-width: 420px;
+    position: relative;
+  }
+  .modal-title {
+    font-family: 'Nunito', sans-serif;
+    font-size: 18px;
+    font-weight: 800;
+    margin-bottom: 20px;
+  }
+  .modal-close {
+    position: absolute;
+    top: 16px; right: 16px;
+    background: none; border: none;
+    color: var(--text3); font-size: 20px;
+    cursor: pointer; line-height: 1;
+  }
+
+  .form-group { margin-bottom: 14px; }
+  .form-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text2);
+    margin-bottom: 6px;
+    letter-spacing: .02em;
+    font-family: 'Nunito', sans-serif;
+  }
+  .form-input, .form-select, .form-textarea {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-family: 'Nunito Sans', sans-serif;
+    font-size: 14px;
+    padding: 10px 14px;
+    outline: none;
+    transition: border-color .2s;
+  }
+  .form-input:focus, .form-select:focus, .form-textarea:focus { border-color: var(--accent); }
+  .form-select option { background: var(--surface2); }
+  .form-textarea { resize: vertical; min-height: 72px; }
+
+  .btn-row { display: flex; gap: 10px; margin-top: 20px; }
+  .btn {
+    flex: 1;
+    padding: 11px 18px;
+    border-radius: var(--radius-sm);
+    border: none;
+    font-family: 'Nunito', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .btn-primary { background: var(--accent); color: #000; }
+  .btn-primary:hover { opacity: .85; }
+  .btn-danger { background: var(--danger); color: #000; }
+  .btn-danger:hover { opacity: .85; }
+  .btn-ghost { background: var(--surface3); color: var(--text2); }
+  .btn-ghost:hover { color: var(--text); }
+  .btn-success { background: var(--accent2); color: #000; }
+  .btn-success:hover { opacity: .85; }
+  .btn-sm { padding: 7px 14px; font-size: 12px; flex: none; }
+
+  .type-toggle { display: flex; gap: 8px; margin-bottom: 14px; }
+  .type-btn {
+    flex: 1; padding: 9px; border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    color: var(--text2);
+    font-family: 'Nunito', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .2s;
+    text-align: center;
+  }
+  .type-btn.add.active { background: rgba(52,211,153,.15); border-color: var(--accent2); color: var(--accent2); }
+  .type-btn.deduct.active { background: rgba(248,113,113,.15); border-color: var(--danger); color: var(--danger); }
+  .type-btn.set.active { background: rgba(167,139,250,.15); border-color: var(--accent); color: var(--accent); }
+
+  .stated-panel {
+    background: rgba(244,114,182,.07);
+    border: 1px solid rgba(244,114,182,.2);
+    border-radius: var(--radius);
+    padding: 18px;
+    margin-bottom: 20px;
+  }
+  .stated-panel h3 { font-size: 14px; color: var(--accent3); margin-bottom: 12px; font-family: 'Nunito', sans-serif; font-weight: 700; }
+  .stated-row { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,.05); }
+  .stated-row:last-child { border-bottom: none; }
+  .stated-row .name { color: var(--text2); font-size: 13px; }
+  .stated-row .val { font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 15px; color: var(--accent3); }
+
+  .total-row {
+    display: flex; justify-content: space-between; align-items: center;
+    background: var(--surface2);
+    border-radius: var(--radius-sm);
+    padding: 14px 16px;
+    margin-top: 16px;
+  }
+  .total-label { font-size: 12px; color: var(--text3); font-weight: 700; text-transform: uppercase; letter-spacing: .06em; font-family: 'Nunito', sans-serif; }
+  .total-val { font-family: 'Nunito', sans-serif; font-weight: 800; font-size: 20px; color: var(--accent2); }
+
+  .log-item {
+    display: flex; align-items: flex-start; gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .log-item:last-child { border-bottom: none; }
+  .log-dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
+  .log-dot.add { background: var(--accent2); }
+  .log-dot.deduct { background: var(--danger); }
+  .log-dot.set { background: var(--accent); }
+  .log-info { flex: 1; }
+  .log-desc { font-size: 13px; color: var(--text); }
+  .log-meta { font-size: 11px; color: var(--text3); margin-top: 2px; }
+  .log-amt { font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 14px; }
+  .log-amt.add { color: var(--accent2); }
+  .log-amt.deduct { color: var(--danger); }
+  .log-amt.set { color: var(--accent); }
+
+  .dues-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 14px;
+    background: var(--surface2);
+    border-radius: var(--radius-sm);
+    margin-bottom: 8px;
+  }
+  .dues-check {
+    width: 18px; height: 18px; border-radius: 4px;
+    border: 2px solid var(--border);
+    background: none;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; transition: all .2s;
+  }
+  .dues-check.checked { background: var(--accent2); border-color: var(--accent2); }
+  .dues-name { flex: 1; font-size: 13px; }
+  .dues-name.paid { text-decoration: line-through; color: var(--text3); }
+  .dues-amount { font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 14px; }
+  .dues-kasya { font-size: 11px; padding: 2px 8px; border-radius: 20px; font-family: 'Nunito', sans-serif; font-weight: 700; }
+  .dues-kasya.ok { background: rgba(52,211,153,.15); color: var(--accent2); }
+  .dues-kasya.no { background: rgba(248,113,113,.15); color: var(--danger); }
+  .dues-del { background: none; border: none; color: var(--text3); cursor: pointer; font-size: 16px; line-height: 1; }
+  .dues-del:hover { color: var(--danger); }
+
+  .needs-item {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 14px;
+    background: var(--surface2);
+    border-radius: var(--radius-sm);
+    margin-bottom: 8px;
+  }
+
+  .cal-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .cal-nav { background: none; border: none; color: var(--text2); font-size: 20px; cursor: pointer; padding: 4px 8px; }
+  .cal-month { font-family: 'Nunito', sans-serif; font-size: 16px; font-weight: 800; }
+  .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+  .cal-day-label {
+    text-align: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text3);
+    padding: 6px 0;
+    text-transform: uppercase;
+    font-family: 'Nunito', sans-serif;
+  }
+  .cal-day {
+    aspect-ratio: 1;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+    position: relative;
+    transition: all .15s;
+    color: var(--text2);
+    font-family: 'Nunito Sans', sans-serif;
+  }
+  .cal-day:hover { background: var(--surface3); color: var(--text); }
+  .cal-day.today { background: rgba(167,139,250,.15); color: var(--accent); font-weight: 700; }
+  .cal-day.has-plan::after {
+    content: '';
+    position: absolute;
+    bottom: 4px;
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    background: var(--accent3);
+  }
+  .cal-day.empty { cursor: default; }
+  .cal-day.selected { background: var(--accent); color: #000; font-weight: 700; }
+
+  .plan-panel { background: var(--surface2); border-radius: var(--radius); padding: 18px; margin-top: 16px; }
+  .plan-date-title { font-family: 'Nunito', sans-serif; font-size: 15px; font-weight: 800; margin-bottom: 14px; }
+  .plan-item {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .plan-item:last-child { border-bottom: none; }
+  .plan-cb { margin-top: 2px; accent-color: var(--accent); width: 15px; height: 15px; cursor: pointer; }
+  .plan-text { font-size: 13px; flex: 1; word-break: break-word; font-family: 'Nunito Sans', sans-serif; }
+  .plan-text.done { text-decoration: line-through; color: var(--text3); }
+  .plan-del-btn { background: none; border: none; color: var(--text3); cursor: pointer; font-size: 14px; }
+  .plan-del-btn:hover { color: var(--danger); }
+
+  .weight-log-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .weight-log-item:last-child { border-bottom: none; }
+  .weight-date { font-size: 12px; color: var(--text3); font-family: 'Nunito Sans', sans-serif; }
+  .weight-val { font-family: 'Nunito', sans-serif; font-weight: 700; font-size: 15px; }
+  .weight-delta { font-size: 12px; font-family: 'Nunito', sans-serif; font-weight: 700; }
+  .weight-delta.down { color: var(--accent2); }
+  .weight-delta.up { color: var(--danger); }
+  .weight-del-btn { background: none; border: none; color: var(--text3); cursor: pointer; font-size: 14px; }
+  .weight-del-btn:hover { color: var(--danger); }
+
+  canvas { border-radius: var(--radius-sm); }
+
+  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
+  .section-title { font-family: 'Nunito', sans-serif; font-size: 20px; font-weight: 800; }
+
+  .progress-bar-wrap { background: var(--surface3); border-radius: 99px; height: 6px; overflow: hidden; margin-top: 8px; }
+  .progress-bar { height: 100%; border-radius: 99px; transition: width .4s; }
+
+  .tag { display: inline-flex; align-items: center; font-size: 11px; padding: 2px 8px; border-radius: 20px; font-weight: 700; font-family: 'Nunito', sans-serif; }
+  .tag-ok { background: rgba(52,211,153,.12); color: var(--accent2); }
+  .tag-no { background: rgba(248,113,113,.12); color: var(--danger); }
+  .tag-warn { background: rgba(251,191,36,.12); color: var(--warning); }
+
+  .empty { color: var(--text3); font-size: 13px; text-align: center; padding: 24px; font-family: 'Nunito Sans', sans-serif; }
+  .sep { height: 1px; background: var(--border); margin: 20px 0; }
+
+  .toast {
+    position: fixed; bottom: 24px; right: 24px;
+    background: var(--surface3);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 12px 18px;
+    font-size: 13px;
+    font-family: 'Nunito Sans', sans-serif;
+    z-index: 999;
+    transform: translateY(80px);
+    opacity: 0;
+    transition: all .3s;
+    max-width: 280px;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+
+  .mt-4 { margin-top: 4px; }
+  .mt-8 { margin-top: 8px; }
+  .mt-12 { margin-top: 12px; }
+  .mt-16 { margin-top: 16px; }
+  .mb-16 { margin-bottom: 16px; }
+  .flex { display: flex; }
+  .items-center { align-items: center; }
+  .gap-8 { gap: 8px; }
+  .gap-12 { gap: 12px; }
+  .text-sm { font-size: 12px; color: var(--text3); font-family: 'Nunito Sans', sans-serif; }
+  .text-accent { color: var(--accent); }
+  .text-success { color: var(--accent2); }
+  .text-danger { color: var(--danger); }
+  .font-bold { font-family: 'Nunito', sans-serif; font-weight: 800; }
+
+  .weight-status {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 8px 16px;
+    border-radius: 99px;
+    font-size: 13px; font-weight: 700;
+    font-family: 'Nunito', sans-serif;
+    margin-bottom: 16px;
+  }
+  .ws-good { background: rgba(52,211,153,.12); color: var(--accent2); border: 1px solid rgba(52,211,153,.25); }
+  .ws-bad { background: rgba(248,113,113,.12); color: var(--danger); border: 1px solid rgba(248,113,113,.25); }
+  .ws-neutral { background: rgba(167,139,250,.12); color: var(--accent); border: 1px solid rgba(167,139,250,.25); }
+
+  .log-scroll { max-height: 340px; overflow-y: auto; }
+  .log-scroll::-webkit-scrollbar { width: 4px; }
+  .log-scroll::-webkit-scrollbar-track { background: transparent; }
+  .log-scroll::-webkit-scrollbar-thumb { background: var(--border); border-radius: 99px; }
+  .meal-row { display:flex; align-items:center; justify-content:space-between; padding:10px 0; border-bottom:1px solid var(--border); }
+.meal-row:last-child { border-bottom:none; }
+.meal-label { font-size:13px; color:var(--text2); min-width:130px; }
+.meal-input-wrap { display:flex; align-items:center; gap:8px; }
+.cal-history-row { display:flex; align-items:center; justify-content:space-between; padding:9px 0; border-bottom:1px solid var(--border); }
+.cal-history-row:last-child { border-bottom:none; }
+.progress-bar.over { background: var(--danger); }
+.progress-bar.under { background: var(--accent2); }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-brand">💸 Kwenta</div>
+  <button class="nav-btn active" onclick="showSection('dashboard')">💰 Budget</button>
+  <button class="nav-btn" onclick="showSection('dues')">📋 Dues</button>
+  <button class="nav-btn" onclick="showSection('needs')">🛒 Needs</button>
+  <button class="nav-btn" onclick="showSection('log')">📜 Log</button>
+  <button class="nav-btn" onclick="showSection('planner')">🗓️ Planner</button>
+  <button class="nav-btn" onclick="showSection('weight')">⚖️ Weight</button>
+  <button class="nav-btn" onclick="showSection('calories')">🍽️ Calories</button>
+  <div class="nav-actions">
+    <button class="btn-backup" onclick="backupData()">⬇️ Backup</button>
+    <button class="btn-restore" onclick="document.getElementById('restoreFile').click()">⬆️ Restore</button>
+    <input type="file" id="restoreFile" accept=".json" style="display:none" onchange="restoreData(event)">
+  </div>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<div class="modal-overlay" id="txModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('txModal')">×</button>
+    <div class="modal-title" id="txModalTitle">Transaction</div>
+    <div class="type-toggle">
+      <button class="type-btn add active" onclick="setTxType('add')">➕ Add</button>
+      <button class="type-btn deduct" onclick="setTxType('deduct')">➖ Deduct</button>
+      <button class="type-btn set" onclick="setTxType('set')">✏️ Set Exact</button>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Amount (₱)</label>
+      <input class="form-input" type="number" id="txAmount" placeholder="0.00" min="0" step="0.01">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Notes / Source</label>
+      <textarea class="form-textarea" id="txNotes" placeholder="e.g. allowance, groceries, load..."></textarea>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="closeModal('txModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="applyTransaction()">Apply</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="statedModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('statedModal')">×</button>
+    <div class="modal-title">📢 Sinabi mo sa Magulang</div>
+    <p class="text-sm mb-16" style="margin-bottom:16px">Ito yung stated amounts — yung sinasabi mo kay mommy/daddy.</p>
+    <div id="statedContent"></div>
+    <div class="sep"></div>
+    <p class="text-sm">💡 Tip: Pwede kang mag-set ng stated amount sa bawat account by clicking it at choosing "Set Exact".</p>
+    <div class="btn-row" style="margin-top:12px">
+      <button class="btn btn-ghost" onclick="closeModal('statedModal')">Close</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="dueModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('dueModal')">×</button>
+    <div class="modal-title">➕ Add Monthly Due</div>
+    <div class="form-group">
+      <label class="form-label">Name</label>
+      <input class="form-input" id="dueName" placeholder="e.g. Netflix, Internet...">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Amount (₱)</label>
+      <input class="form-input" type="number" id="dueAmount" placeholder="0.00" min="0" step="0.01">
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="closeModal('dueModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="addDue()">Add</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="needModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('needModal')">×</button>
+    <div class="modal-title">🛒 Add Item to Buy</div>
+    <div class="form-group">
+      <label class="form-label">Item Name</label>
+      <input class="form-input" id="needName" placeholder="e.g. Shampoo, Notebook...">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Estimated Price (₱)</label>
+      <input class="form-input" type="number" id="needAmount" placeholder="0.00" min="0" step="0.01">
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="closeModal('needModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="addNeed()">Add</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="planModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('planModal')">×</button>
+    <div class="modal-title" id="planModalTitle">Add Task/Plan</div>
+    <div class="form-group">
+      <label class="form-label">Task / Plan</label>
+      <input class="form-input" id="planText" placeholder="What are you planning to do?">
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-ghost" onclick="closeModal('planModal')">Cancel</button>
+      <button class="btn btn-primary" onclick="addPlan()">Add</button>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+  <div class="section active" id="section-dashboard">
+    <div class="section-header">
+      <div class="section-title">My Accounts</div>
+      <button class="btn btn-ghost btn-sm" onclick="showStated()">👁️ Stated View</button>
+    </div>
+    <div class="grid-4" id="accountCards"></div>
+    <div class="total-row mt-16">
+      <div>
+        <div class="total-label">Total Actual</div>
+        <div class="text-sm mt-4">Cash on Hand + LandBank + MetroBank + GCash</div>
+      </div>
+      <div class="total-val" id="totalActual">₱0.00</div>
+    </div>
+    <div class="total-row" style="margin-top:8px">
+      <div>
+        <div class="total-label">Liquid (Cash + GCash)</div>
+        <div class="text-sm mt-4">Available for dues & needs</div>
+      </div>
+      <div class="total-val" id="liquidTotal">₱0.00</div>
+    </div>
+  </div>
+
+  <div class="section" id="section-dues">
+    <div class="section-header">
+      <div class="section-title">📋 Monthly Dues</div>
+      <button class="btn btn-primary btn-sm" onclick="openModal('dueModal')">+ Add Due</button>
+    </div>
+    <div class="card mb-16" style="margin-bottom:16px">
+      <div class="card-title">Liquid Balance (Cash + GCash)</div>
+      <div class="font-bold" style="font-size:22px" id="duesLiquid">₱0.00</div>
+    </div>
+    <div id="duesList"></div>
+    <div class="total-row mt-16">
+      <div>
+        <div class="total-label">Total Dues</div>
+        <div class="text-sm mt-4" id="duesStatusText"></div>
+      </div>
+      <div>
+        <div class="total-val" id="duesTotal">₱0.00</div>
+        <div id="duesBadge" class="mt-4"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" id="section-needs">
+    <div class="section-header">
+      <div class="section-title">🛒 Needs to Buy</div>
+      <button class="btn btn-primary btn-sm" onclick="openModal('needModal')">+ Add Item</button>
+    </div>
+    <div class="card mb-16" style="margin-bottom:16px">
+      <div class="card-title">Available (Cash + GCash)</div>
+      <div class="font-bold" style="font-size:22px" id="needsLiquid">₱0.00</div>
+    </div>
+    <div id="needsList"></div>
+    <div class="total-row mt-16">
+      <div>
+        <div class="total-label">Total Needed</div>
+        <div class="text-sm mt-4" id="needsStatusText"></div>
+      </div>
+      <div>
+        <div class="total-val" id="needsTotal">₱0.00</div>
+        <div id="needsBadge" class="mt-4"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" id="section-log">
+    <div class="section-header">
+      <div class="section-title">📜 Activity Log</div>
+      <button class="btn btn-ghost btn-sm" onclick="clearLog()">Clear Log</button>
+    </div>
+    <div class="card">
+      <div class="log-scroll" id="logList"></div>
+    </div>
+  </div>
+
+  <div class="section" id="section-planner">
+    <div class="section-title" style="margin-bottom:20px">🗓️ Planner</div>
+    <div class="grid-2" style="gap:24px; align-items:start">
+      <div class="card">
+        <div class="cal-header">
+          <button class="cal-nav" onclick="changeMonth(-1)">‹</button>
+          <div class="cal-month" id="calMonth"></div>
+          <button class="cal-nav" onclick="changeMonth(1)">›</button>
+        </div>
+        <div class="cal-grid" id="calGrid"></div>
+      </div>
+      <div>
+        <div id="planPanel" class="plan-panel" style="display:none">
+          <div class="plan-date-title" id="planDateTitle"></div>
+          <div id="planItems"></div>
+          <div class="flex gap-8 mt-12" style="margin-top:12px">
+            <input class="form-input" id="planInline" placeholder="Add task..." style="flex:1">
+            <button class="btn btn-primary btn-sm" onclick="addPlanInline()">Add</button>
+          </div>
+        </div>
+        <div id="planEmpty" class="empty card">Select a day to see or add plans.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section" id="section-weight">
+    <div class="section-title" style="margin-bottom:20px">⚖️ Weight Tracker</div>
+    <div class="grid-2" style="align-items:start; gap:20px">
+      <div>
+        <div class="card mb-16" style="margin-bottom:16px">
+          <div class="card-title">Goal Weight</div>
+          <div class="flex items-center gap-8" style="margin-top:8px">
+            <input class="form-input" type="number" id="goalWeight" placeholder="e.g. 55" step="0.1" style="width:120px">
+            <span class="text-sm">kg</span>
+            <button class="btn btn-ghost btn-sm" onclick="saveGoal()">Save Goal</button>
+          </div>
+          <div class="mt-8" id="goalDisplay" style="margin-top:8px"></div>
+        </div>
+        <div class="card mb-16" style="margin-bottom:16px">
+          <div class="card-title">Log Weight</div>
+          <div class="flex items-center gap-8 mt-8" style="margin-top:8px">
+            <input class="form-input" type="number" id="newWeight" placeholder="e.g. 62.5" step="0.1" style="width:120px">
+            <span class="text-sm">kg</span>
+            <input class="form-input" type="date" id="weightDate" style="width:160px">
+            <button class="btn btn-primary btn-sm" onclick="logWeight()">Log</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title" style="margin-bottom:12px">Log History</div>
+          <div id="weightList"></div>
+        </div>
+      </div>
+      <div>
+        <div class="card mb-16" style="margin-bottom:16px">
+          <div id="weightStatus"></div>
+          <canvas id="weightChart" height="200"></canvas>
+        </div>
+        <div class="card" id="weightStats"></div>
+      </div>
+    </div>
+  </div>
+<div class="section" id="section-calories">
+  <div class="section-title" style="margin-bottom:20px">🍽️ Calorie Tracker</div>
+
+  <div class="grid-2" style="align-items:start; gap:20px">
+    <div>
+      <!-- Goal + Date -->
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-title" style="margin-bottom:10px">Daily Calorie Goal</div>
+        <div class="flex items-center gap-8">
+          <input class="form-input" type="number" id="calGoalInput" placeholder="e.g. 2000" step="1" style="width:140px">
+          <span class="text-sm">kcal</span>
+          <button class="btn btn-ghost btn-sm" onclick="saveCalorieGoal()">Save Goal</button>
+        </div>
+        <div class="mt-8" id="calGoalDisplay"></div>
+      </div>
+
+      <!-- Date Selector -->
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-title" style="margin-bottom:10px">Log Date</div>
+        <input class="form-input" type="date" id="calDate" style="width:200px" onchange="renderMeals()">
+      </div>
+
+      <!-- Meals -->
+      <div class="card">
+        <div class="card-title" style="margin-bottom:14px">Meals</div>
+        <div id="mealInputs"></div>
+        <button class="btn btn-primary" style="margin-top:14px; width:100%" onclick="saveMealCalories()">Save Day</button>
+      </div>
+    </div>
+
+    <div>
+      <!-- Daily Summary -->
+      <div class="card" style="margin-bottom:16px">
+        <div class="card-title" style="margin-bottom:12px">Today's Summary</div>
+        <div id="calSummary"></div>
+      </div>
+
+      <!-- History -->
+      <div class="card">
+        <div class="card-title" style="margin-bottom:12px">History</div>
+        <div id="calHistory"></div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+let state = {
+  accounts: {
+    cash: { actual: 0, stated: 0 },
+    landbank: { actual: 0, stated: 0 },
+    metrobank: { actual: 0, stated: 0 },
+    gcash: { actual: 0, stated: 0 },
+  },
+  log: [],
+  dues: [],
+  needs: [],
+  plans: {},
+  weight: { goal: null, logs: [] },
+calories: { goal: 2000, logs: {} }
+};
+
+const ACCOUNTS = [
+  { key: 'cash', label: 'Cash on Hand', icon: '💵', cls: 'bc-cash' },
+  { key: 'landbank', label: 'LandBank', icon: '🏦', cls: 'bc-land' },
+  { key: 'metrobank', label: 'MetroBank', icon: '🏛️', cls: 'bc-metro' },
+  { key: 'gcash', label: 'GCash', icon: '📱', cls: 'bc-gcash' },
+];
+
+let currentTxAccount = null;
+let currentTxType = 'add';
+let calYear, calMonth, selectedDate = null;
+
+function load() {
+  const saved = localStorage.getItem('kwenta_v2');
+  if (saved) { try { state = JSON.parse(saved); } catch(e) {} }
+}
+function save() { localStorage.setItem('kwenta_v2', JSON.stringify(state)); }
+
+function showSection(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('section-' + id).classList.add('active');
+  event.currentTarget.classList.add('active');
+  if (id === 'planner') renderCal();
+  if (id === 'weight') renderWeight();
+  if (id === 'calories') renderCalories();
+  if (id === 'dues') renderDues();
+  if (id === 'needs') renderNeeds();
+  if (id === 'log') renderLog();
+}
+
+function openModal(id) { document.getElementById(id).classList.add('open'); }
+function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+function fmt(n) { return '₱' + Number(n).toLocaleString('en-PH', {minimumFractionDigits:2, maximumFractionDigits:2}); }
+
+function renderDashboard() {
+  const container = document.getElementById('accountCards');
+  container.innerHTML = ACCOUNTS.map(acc => {
+    const a = state.accounts[acc.key];
+    return `<div class="balance-card ${acc.cls}" onclick="openTx('${acc.key}')">
+      <div class="icon">${acc.icon}</div>
+      <div class="label">${acc.label}</div>
+      <div class="amount-actual">${fmt(a.actual)}</div>
+      <div class="amount-stated">Stated: <span>${fmt(a.stated)}</span></div>
+    </div>`;
+  }).join('');
+  const total = Object.values(state.accounts).reduce((s, a) => s + a.actual, 0);
+  const liquid = state.accounts.cash.actual + state.accounts.gcash.actual;
+  document.getElementById('totalActual').textContent = fmt(total);
+  document.getElementById('liquidTotal').textContent = fmt(liquid);
+}
+
+function openTx(key) {
+  currentTxAccount = key;
+  currentTxType = 'add';
+  document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector('.type-btn.add').classList.add('active');
+  const acc = ACCOUNTS.find(a => a.key === key);
+  document.getElementById('txModalTitle').textContent = acc.icon + ' ' + acc.label;
+  document.getElementById('txAmount').value = '';
+  document.getElementById('txNotes').value = '';
+  openModal('txModal');
+}
+
+function setTxType(type) {
+  currentTxType = type;
+  document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`.type-btn.${type}`).classList.add('active');
+}
+
+function applyTransaction() {
+  const amt = parseFloat(document.getElementById('txAmount').value);
+  const notes = document.getElementById('txNotes').value.trim();
+  if (isNaN(amt) || amt < 0) { toast('Enter a valid amount!'); return; }
+  const acc = state.accounts[currentTxAccount];
+  const prev = acc.actual;
+  if (currentTxType === 'add') { acc.actual += amt; acc.stated += amt; }
+  else if (currentTxType === 'deduct') { acc.actual -= amt; acc.stated -= amt; }
+  else { acc.actual = amt; }
+  const label = ACCOUNTS.find(a => a.key === currentTxAccount).label;
+  const desc = currentTxType === 'add' ? `Added ${fmt(amt)} to ${label}`
+              : currentTxType === 'deduct' ? `Deducted ${fmt(amt)} from ${label}`
+              : `Set ${label} to ${fmt(amt)}`;
+  addLog({ type: currentTxType, account: currentTxAccount, amount: amt, prev, desc, notes, time: new Date().toISOString() });
+  closeModal('txModal');
+  save();
+  renderDashboard();
+  toast('Done! ' + desc);
+}
+
+function addLog(entry) {
+  state.log.unshift(entry);
+  if (state.log.length > 200) state.log.splice(200);
+}
+
+function showStated() {
+  const content = document.getElementById('statedContent');
+  let html = '';
+  let total = 0;
+  ACCOUNTS.forEach(acc => {
+    const a = state.accounts[acc.key];
+    total += a.stated;
+    html += `<div class="stated-row"><div class="name">${acc.icon} ${acc.label}</div><div class="val">${fmt(a.stated)}</div></div>`;
+  });
+  html += `<div class="stated-row" style="margin-top:8px"><div class="name" style="font-weight:700;color:var(--text)">Total Stated</div><div class="val" style="color:var(--accent2)">${fmt(total)}</div></div>`;
+  content.innerHTML = html;
+  openModal('statedModal');
+}
+
+function renderDues() {
+  const liquid = state.accounts.cash.actual + state.accounts.gcash.actual;
+  document.getElementById('duesLiquid').textContent = fmt(liquid);
+  const list = document.getElementById('duesList');
+  if (!state.dues.length) {
+    list.innerHTML = '<div class="empty">No dues yet. Add one!</div>';
+    document.getElementById('duesTotal').textContent = fmt(0);
+    document.getElementById('duesStatusText').textContent = '';
+    document.getElementById('duesBadge').innerHTML = '';
+    return;
+  }
+  let total = 0;
+  state.dues.forEach(d => { if (!d.paid) total += d.amount; });
+  document.getElementById('duesTotal').textContent = fmt(total);
+  const kasya = liquid >= total;
+  document.getElementById('duesStatusText').textContent = kasya ? `Kasya pa! ${fmt(liquid - total)} ang matitira.` : `Kulang ng ${fmt(total - liquid)}!`;
+  document.getElementById('duesBadge').innerHTML = kasya ? '<span class="tag tag-ok">✅ Kasya</span>' : '<span class="tag tag-no">❌ Di Kasya</span>';
+  list.innerHTML = state.dues.map((d, i) => {
+    const k = liquid >= d.amount;
+    return `<div class="dues-item">
+      <div class="dues-check ${d.paid ? 'checked' : ''}" onclick="toggleDue(${i})">${d.paid ? '✓' : ''}</div>
+      <div class="dues-name ${d.paid ? 'paid' : ''}" style="flex:1">${d.name}</div>
+      <div class="dues-amount">${fmt(d.amount)}</div>
+      <span class="dues-kasya ${k ? 'ok' : 'no'}">${k ? 'Kasya' : 'Di Kasya'}</span>
+      <button class="dues-del" onclick="deleteDue(${i})">×</button>
+    </div>`;
+  }).join('');
+}
+
+function addDue() {
+  const name = document.getElementById('dueName').value.trim();
+  const amt = parseFloat(document.getElementById('dueAmount').value);
+  if (!name) { toast('Enter a name!'); return; }
+  if (isNaN(amt) || amt <= 0) { toast('Enter a valid amount!'); return; }
+  state.dues.push({ name, amount: amt, paid: false });
+  document.getElementById('dueName').value = '';
+  document.getElementById('dueAmount').value = '';
+  closeModal('dueModal');
+  save(); renderDues();
+  toast('Due added!');
+}
+
+function toggleDue(i) { state.dues[i].paid = !state.dues[i].paid; save(); renderDues(); }
+function deleteDue(i) { state.dues.splice(i, 1); save(); renderDues(); }
+
+function renderNeeds() {
+  const liquid = state.accounts.cash.actual + state.accounts.gcash.actual;
+  document.getElementById('needsLiquid').textContent = fmt(liquid);
+  const list = document.getElementById('needsList');
+  if (!state.needs.length) {
+    list.innerHTML = '<div class="empty">No items yet. Add one!</div>';
+    document.getElementById('needsTotal').textContent = fmt(0);
+    document.getElementById('needsStatusText').textContent = '';
+    document.getElementById('needsBadge').innerHTML = '';
+    return;
+  }
+  let total = 0;
+  state.needs.forEach(n => { if (!n.bought) total += n.amount; });
+  document.getElementById('needsTotal').textContent = fmt(total);
+  const kasya = liquid >= total;
+  document.getElementById('needsStatusText').textContent = kasya ? `Kasya pa! ${fmt(liquid - total)} ang matitira.` : `Kulang ng ${fmt(total - liquid)}!`;
+  document.getElementById('needsBadge').innerHTML = kasya ? '<span class="tag tag-ok">✅ Kasya</span>' : '<span class="tag tag-no">❌ Di Kasya</span>';
+  list.innerHTML = state.needs.map((n, i) => {
+    const k = liquid >= n.amount;
+    return `<div class="needs-item">
+      <div class="dues-check ${n.bought ? 'checked' : ''}" onclick="toggleNeed(${i})">${n.bought ? '✓' : ''}</div>
+      <div class="dues-name ${n.bought ? 'paid' : ''}" style="flex:1">${n.name}</div>
+      <div class="dues-amount">${fmt(n.amount)}</div>
+      <span class="dues-kasya ${k ? 'ok' : 'no'}">${k ? 'Kasya' : 'Di Kasya'}</span>
+      <button class="dues-del" onclick="deleteNeed(${i})">×</button>
+    </div>`;
+  }).join('');
+}
+
+function addNeed() {
+  const name = document.getElementById('needName').value.trim();
+  const amt = parseFloat(document.getElementById('needAmount').value);
+  if (!name) { toast('Enter a name!'); return; }
+  if (isNaN(amt) || amt <= 0) { toast('Enter a valid amount!'); return; }
+  state.needs.push({ name, amount: amt, bought: false });
+  document.getElementById('needName').value = '';
+  document.getElementById('needAmount').value = '';
+  closeModal('needModal');
+  save(); renderNeeds();
+  toast('Item added!');
+}
+
+function toggleNeed(i) { state.needs[i].bought = !state.needs[i].bought; save(); renderNeeds(); }
+function deleteNeed(i) { state.needs.splice(i, 1); save(); renderNeeds(); }
+
+function renderLog() {
+  const list = document.getElementById('logList');
+  if (!state.log.length) { list.innerHTML = '<div class="empty">No activity yet.</div>'; return; }
+  list.innerHTML = state.log.map(entry => {
+    const d = new Date(entry.time);
+    const timeStr = d.toLocaleDateString('en-PH', {month:'short',day:'numeric'}) + ' ' + d.toLocaleTimeString('en-PH', {hour:'2-digit',minute:'2-digit'});
+    const acc = ACCOUNTS.find(a => a.key === entry.account);
+    return `<div class="log-item">
+      <div class="log-dot ${entry.type}"></div>
+      <div class="log-info">
+        <div class="log-desc">${entry.desc}</div>
+        ${entry.notes ? `<div class="log-meta">📝 ${entry.notes}</div>` : ''}
+        <div class="log-meta">${timeStr} · ${acc ? acc.icon + ' ' + acc.label : ''}</div>
+      </div>
+      <div class="log-amt ${entry.type}">${entry.type==='add'?'+':entry.type==='deduct'?'-':'='}${fmt(entry.amount)}</div>
+    </div>`;
+  }).join('');
+}
+
+function clearLog() {
+  if (!confirm('Clear all activity log?')) return;
+  state.log = []; save(); renderLog();
+}
+
+function initCal() {
+  const now = new Date();
+  calYear = now.getFullYear();
+  calMonth = now.getMonth();
+}
+
+function changeMonth(dir) {
+  calMonth += dir;
+  if (calMonth > 11) { calMonth = 0; calYear++; }
+  if (calMonth < 0) { calMonth = 11; calYear--; }
+  renderCal();
+}
+
+function renderCal() {
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  document.getElementById('calMonth').textContent = months[calMonth] + ' ' + calYear;
+  const first = new Date(calYear, calMonth, 1).getDay();
+  const days = new Date(calYear, calMonth + 1, 0).getDate();
+  const today = new Date();
+  const grid = document.getElementById('calGrid');
+  const dayLabels = ['Su','Mo','Tu','We','Th','Fr','Sa'];
+  let html = dayLabels.map(d => `<div class="cal-day-label">${d}</div>`).join('');
+  for (let i = 0; i < first; i++) html += '<div class="cal-day empty"></div>';
+  for (let d = 1; d <= days; d++) {
+    const dateStr = `${calYear}-${String(calMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const isToday = d === today.getDate() && calMonth === today.getMonth() && calYear === today.getFullYear();
+    const hasPlans = state.plans[dateStr] && state.plans[dateStr].length > 0;
+    const isSel = dateStr === selectedDate;
+    const cls = ['cal-day', isToday ? 'today' : '', hasPlans ? 'has-plan' : '', isSel ? 'selected' : ''].filter(Boolean).join(' ');
+    html += `<div class="${cls}" onclick="selectDay('${dateStr}')">${d}</div>`;
+  }
+  grid.innerHTML = html;
+}
+
+function selectDay(dateStr) {
+  selectedDate = dateStr;
+  renderCal();
+  const d = new Date(dateStr + 'T00:00:00');
+  const label = d.toLocaleDateString('en-PH', {weekday:'long', month:'long', day:'numeric', year:'numeric'});
+  document.getElementById('planDateTitle').textContent = label;
+  document.getElementById('planPanel').style.display = 'block';
+  document.getElementById('planEmpty').style.display = 'none';
+  renderPlanItems();
+}
+
+function renderPlanItems() {
+  const plans = state.plans[selectedDate] || [];
+  const container = document.getElementById('planItems');
+  if (!plans.length) { container.innerHTML = '<div class="empty" style="padding:8px 0">No plans yet for this day.</div>'; return; }
+  container.innerHTML = plans.map((p, i) => `
+    <div class="plan-item">
+      <input type="checkbox" class="plan-cb" ${p.done ? 'checked' : ''} onchange="togglePlan(${i})">
+      <span class="plan-text ${p.done ? 'done' : ''}">${p.text}</span>
+      <button class="plan-del-btn" onclick="deletePlan(${i})">×</button>
+    </div>
+  `).join('');
+}
+
+function addPlanInline() {
+  const input = document.getElementById('planInline');
+  const text = input.value.trim();
+  if (!text) { toast('Type a plan first!'); return; }
+  if (!state.plans[selectedDate]) state.plans[selectedDate] = [];
+  state.plans[selectedDate].push({ text, done: false, id: Date.now() });
+  input.value = '';
+  save(); renderPlanItems(); renderCal();
+}
+
+function addPlan() {
+  const text = document.getElementById('planText').value.trim();
+  if (!text) { toast('Enter a plan!'); return; }
+  if (!state.plans[selectedDate]) state.plans[selectedDate] = [];
+  state.plans[selectedDate].push({ text, done: false, id: Date.now() });
+  document.getElementById('planText').value = '';
+  closeModal('planModal');
+  save(); renderPlanItems(); renderCal();
+}
+
+function togglePlan(i) { state.plans[selectedDate][i].done = !state.plans[selectedDate][i].done; save(); renderPlanItems(); }
+function deletePlan(i) { state.plans[selectedDate].splice(i, 1); save(); renderPlanItems(); renderCal(); }
+
+function renderWeight() {
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('weightDate').value = today;
+  if (state.weight.goal) document.getElementById('goalWeight').value = state.weight.goal;
+  renderGoalDisplay(); renderWeightList(); renderWeightChart(); renderWeightStats();
+}
+
+function saveGoal() {
+  const g = parseFloat(document.getElementById('goalWeight').value);
+  if (isNaN(g) || g <= 0) { toast('Enter a valid goal weight!'); return; }
+  state.weight.goal = g;
+  save(); renderGoalDisplay(); renderWeightChart(); renderWeightStats();
+  toast('Goal saved!');
+}
+
+function renderGoalDisplay() {
+  const g = state.weight.goal;
+  const d = document.getElementById('goalDisplay');
+  if (!g) { d.innerHTML = '<span class="text-sm">No goal set yet.</span>'; return; }
+  d.innerHTML = `<span class="text-sm">Goal: <strong style="color:var(--accent)">${g} kg</strong></span>`;
+}
+
+function logWeight() {
+  const kg = parseFloat(document.getElementById('newWeight').value);
+  const date = document.getElementById('weightDate').value;
+  if (isNaN(kg) || kg <= 0) { toast('Enter a valid weight!'); return; }
+  if (!date) { toast('Enter a date!'); return; }
+  state.weight.logs = state.weight.logs.filter(l => l.date !== date);
+  state.weight.logs.push({ date, kg });
+  state.weight.logs.sort((a,b) => a.date.localeCompare(b.date));
+  document.getElementById('newWeight').value = '';
+  save(); renderWeightList(); renderWeightChart(); renderWeightStats();
+  toast('Weight logged!');
+}
+
+function renderWeightList() {
+  const logs = [...state.weight.logs].reverse();
+  const list = document.getElementById('weightList');
+  if (!logs.length) { list.innerHTML = '<div class="empty">No entries yet.</div>'; return; }
+  list.innerHTML = logs.map((l, i) => {
+    const prev = state.weight.logs[state.weight.logs.length - 1 - i - 1];
+    let delta = '';
+    if (prev) {
+      const diff = l.kg - prev.kg;
+      const sign = diff < 0 ? '▼' : '▲';
+      const cls = diff < 0 ? 'down' : 'up';
+      delta = `<span class="weight-delta ${cls}">${sign} ${Math.abs(diff).toFixed(1)}</span>`;
+    }
+    const d = new Date(l.date + 'T00:00:00');
+    const dateLabel = d.toLocaleDateString('en-PH', {month:'short', day:'numeric', year:'numeric'});
+    return `<div class="weight-log-item">
+      <div><div class="weight-val">${l.kg} kg</div><div class="weight-date">${dateLabel}</div></div>
+      <div class="flex items-center gap-8">${delta}<button class="weight-del-btn" onclick="deleteWeight('${l.date}')">×</button></div>
+    </div>`;
+  }).join('');
+}
+
+function deleteWeight(date) { state.weight.logs = state.weight.logs.filter(l => l.date !== date); save(); renderWeightList(); renderWeightChart(); renderWeightStats(); }
+
+function renderWeightStats() {
+  const logs = state.weight.logs;
+  const goal = state.weight.goal;
+  const el = document.getElementById('weightStats');
+  const status = document.getElementById('weightStatus');
+  if (!logs.length) { el.innerHTML = '<div class="empty">Log some weights to see stats.</div>'; status.innerHTML = ''; return; }
+  const latest = logs[logs.length - 1].kg;
+  const first = logs[0].kg;
+  const totalChange = latest - first;
+  const isLoss = totalChange <= 0;
+  let statusHtml = '';
+  if (goal) {
+    const diff = latest - goal;
+    statusHtml = diff <= 0
+      ? `<div class="weight-status ws-good">🎉 Goal reached! ${Math.abs(diff).toFixed(1)} kg below target</div>`
+      : `<div class="weight-status ws-bad">🎯 ${diff.toFixed(1)} kg to go to reach ${goal} kg</div>`;
+  } else {
+    statusHtml = `<div class="weight-status ws-neutral">Set a goal to track progress!</div>`;
+  }
+  status.innerHTML = statusHtml;
+  const progress = goal ? Math.min(100, Math.max(0, ((first - latest) / (first - goal)) * 100)) : 0;
+  const progressColor = progress >= 100 ? 'var(--accent2)' : progress > 50 ? 'var(--accent)' : 'var(--accent4)';
+  el.innerHTML = `
+    <div class="card-title" style="margin-bottom:12px">Stats</div>
+    <div class="stated-row"><span class="name">Current Weight</span><span class="val" style="color:var(--text)">${latest} kg</span></div>
+    <div class="stated-row"><span class="name">Starting Weight</span><span class="val" style="color:var(--text)">${first} kg</span></div>
+    <div class="stated-row"><span class="name">Total Change</span><span class="val ${isLoss ? 'text-success' : 'text-danger'}">${totalChange > 0 ? '+' : ''}${totalChange.toFixed(1)} kg</span></div>
+    ${goal ? `<div class="stated-row"><span class="name">Goal</span><span class="val" style="color:var(--accent)">${goal} kg</span></div>
+      <div style="margin-top:12px"><div class="flex items-center gap-8" style="margin-bottom:6px;justify-content:space-between"><span class="text-sm">Progress</span><span class="text-sm" style="color:var(--accent)">${progress.toFixed(0)}%</span></div>
+      <div class="progress-bar-wrap"><div class="progress-bar" style="width:${progress}%;background:${progressColor}"></div></div></div>` : ''}
+  `;
+}
+
+function renderWeightChart() {
+  const canvas = document.getElementById('weightChart');
+  const ctx = canvas.getContext('2d');
+  const logs = state.weight.logs;
+  const goal = state.weight.goal;
+  canvas.width = canvas.offsetWidth || 400;
+  canvas.height = 200;
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  if (logs.length < 2) {
+    ctx.fillStyle = '#5c5c7a';
+    ctx.font = '13px Nunito Sans, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Log at least 2 weights to see a chart', canvas.width/2, 100);
+    return;
+  }
+  const W = canvas.width, H = canvas.height;
+  const pad = { top: 20, right: 20, bottom: 30, left: 45 };
+  const plotW = W - pad.left - pad.right;
+  const plotH = H - pad.top - pad.bottom;
+  const kgs = logs.map(l => l.kg);
+  let minKg = Math.min(...kgs) - 1;
+  let maxKg = Math.max(...kgs) + 1;
+  if (goal) { minKg = Math.min(minKg, goal - 1); maxKg = Math.max(maxKg, goal + 1); }
+  const xOf = i => pad.left + (i / (logs.length - 1)) * plotW;
+  const yOf = kg => pad.top + (1 - (kg - minKg) / (maxKg - minKg)) * plotH;
+  ctx.strokeStyle = '#2e2e42'; ctx.lineWidth = 1;
+  for (let t = 0; t <= 4; t++) {
+    const y = pad.top + (t / 4) * plotH;
+    ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(W - pad.right, y); ctx.stroke();
+    const val = (maxKg - (t/4) * (maxKg - minKg)).toFixed(1);
+    ctx.fillStyle = '#5c5c7a'; ctx.font = '10px Nunito Sans, sans-serif'; ctx.textAlign = 'right';
+    ctx.fillText(val, pad.left - 5, y + 4);
+  }
+  if (goal) {
+    const gy = yOf(goal);
+    ctx.strokeStyle = 'rgba(52,211,153,0.4)'; ctx.lineWidth = 1.5; ctx.setLineDash([5,4]);
+    ctx.beginPath(); ctx.moveTo(pad.left, gy); ctx.lineTo(W - pad.right, gy); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#34d399'; ctx.font = '10px Nunito Sans, sans-serif'; ctx.textAlign = 'left';
+    ctx.fillText(`Goal: ${goal}kg`, pad.left + 4, gy - 4);
+  }
+  const grad = ctx.createLinearGradient(0, pad.top, 0, H - pad.bottom);
+  grad.addColorStop(0, 'rgba(167,139,250,0.25)');
+  grad.addColorStop(1, 'rgba(167,139,250,0)');
+  ctx.beginPath();
+  ctx.moveTo(xOf(0), yOf(logs[0].kg));
+  logs.forEach((l, i) => ctx.lineTo(xOf(i), yOf(l.kg)));
+  ctx.lineTo(xOf(logs.length - 1), H - pad.bottom);
+  ctx.lineTo(xOf(0), H - pad.bottom);
+  ctx.closePath(); ctx.fillStyle = grad; ctx.fill();
+  ctx.strokeStyle = '#a78bfa'; ctx.lineWidth = 2.5; ctx.lineJoin = 'round';
+  ctx.beginPath();
+  logs.forEach((l, i) => { i === 0 ? ctx.moveTo(xOf(i), yOf(l.kg)) : ctx.lineTo(xOf(i), yOf(l.kg)); });
+  ctx.stroke();
+  logs.forEach((l, i) => {
+    ctx.beginPath(); ctx.arc(xOf(i), yOf(l.kg), 4, 0, Math.PI * 2);
+    ctx.fillStyle = '#a78bfa'; ctx.fill();
+    ctx.strokeStyle = '#0f0f14'; ctx.lineWidth = 2; ctx.stroke();
+  });
+  ctx.fillStyle = '#5c5c7a'; ctx.font = '9px Nunito Sans, sans-serif'; ctx.textAlign = 'center';
+  const step = Math.ceil(logs.length / 6);
+  logs.forEach((l, i) => {
+    if (i % step === 0 || i === logs.length - 1) {
+      const d = new Date(l.date + 'T00:00:00');
+      ctx.fillText((d.getMonth()+1) + '/' + d.getDate(), xOf(i), H - 5);
+    }
+  });
+}
+const MEALS = [
+  { key: 'breakfast', label: '🌅 Breakfast' },
+  { key: 'morningSnack', label: '🍎 Morning Snack' },
+  { key: 'lunch', label: '🍱 Lunch' },
+  { key: 'afternoonSnack', label: '🍪 Afternoon Snack' },
+  { key: 'dinner', label: '🌙 Dinner' },
+];
+
+function renderCalories() {
+  if (state.calories.goal) document.getElementById('calGoalInput').value = state.calories.goal;
+  renderCalGoalDisplay();
+  renderMeals();
+  renderCalHistory();
+}
+
+function saveCalorieGoal() {
+  const g = parseInt(document.getElementById('calGoalInput').value);
+  if (isNaN(g) || g <= 0) { toast('Enter a valid calorie goal!'); return; }
+  state.calories.goal = g;
+  save(); renderCalGoalDisplay(); renderCalSummary(); renderCalHistory();
+  toast('Calorie goal saved!');
+}
+
+function renderCalGoalDisplay() {
+  const g = state.calories.goal;
+  const el = document.getElementById('calGoalDisplay');
+  if (!el) return;
+  el.innerHTML = g ? `<span class="text-sm">Goal: <strong style="color:var(--accent)">${g.toLocaleString()} kcal / day</strong></span>` : '<span class="text-sm">No goal set.</span>';
+}
+
+function renderMeals() {
+  const date = document.getElementById('calDate').value;
+  const saved = (state.calories.logs[date]) || {};
+  const container = document.getElementById('mealInputs');
+  container.innerHTML = MEALS.map(m => `
+    <div class="meal-row">
+      <span class="meal-label">${m.label}</span>
+      <div class="meal-input-wrap">
+        <input class="form-input" type="number" id="meal_${m.key}" placeholder="0" min="0" step="1"
+          value="${saved[m.key] || ''}" style="width:100px; text-align:right;">
+        <span class="text-sm">kcal</span>
+      </div>
+    </div>
+  `).join('');
+  renderCalSummary();
+}
+
+function saveMealCalories() {
+  const date = document.getElementById('calDate').value;
+  if (!date) { toast('Select a date!'); return; }
+  const entry = {};
+  MEALS.forEach(m => {
+    const val = parseInt(document.getElementById('meal_' + m.key).value) || 0;
+    entry[m.key] = val;
+  });
+  state.calories.logs[date] = entry;
+  save(); renderCalSummary(); renderCalHistory();
+  toast('Calories saved!');
+}
+
+function renderCalSummary() {
+  const date = document.getElementById('calDate') ? document.getElementById('calDate').value : null;
+  const el = document.getElementById('calSummary');
+  if (!el || !date) return;
+  const saved = state.calories.logs[date] || {};
+  const goal = state.calories.goal || 2000;
+  let total = 0;
+  MEALS.forEach(m => { total += saved[m.key] || 0; });
+  const pct = Math.min(100, Math.round((total / goal) * 100));
+  const over = total > goal;
+  const diff = Math.abs(total - goal);
+  const barCls = over ? 'over' : 'under';
+  const statusColor = over ? 'var(--danger)' : 'var(--accent2)';
+  const statusText = over ? `Over by ${diff.toLocaleString()} kcal` : `${diff.toLocaleString()} kcal remaining`;
+  const mealBreakdown = MEALS.map(m => {
+    const val = saved[m.key] || 0;
+    return `<div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;">
+      <span class="text-sm">${m.label}</span>
+      <span style="font-family:'Nunito',sans-serif;font-weight:700;font-size:13px;color:var(--text)">${val.toLocaleString()} kcal</span>
+    </div>`;
+  }).join('');
+  el.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;">
+      <span style="font-family:'Nunito',sans-serif;font-weight:800;font-size:26px;">${total.toLocaleString()}</span>
+      <span class="text-sm">/ ${goal.toLocaleString()} kcal</span>
+    </div>
+    <div class="progress-bar-wrap" style="margin-bottom:8px;">
+      <div class="progress-bar ${barCls}" style="width:${pct}%"></div>
+    </div>
+    <div style="font-size:12px;font-weight:700;font-family:'Nunito',sans-serif;color:${statusColor};margin-bottom:14px;">${statusText}</div>
+    <div class="sep" style="margin:10px 0;"></div>
+    ${mealBreakdown}
+  `;
+}
+
+function renderCalHistory() {
+  const el = document.getElementById('calHistory');
+  if (!el) return;
+  const keys = Object.keys(state.calories.logs).sort((a,b) => b.localeCompare(a));
+  if (!keys.length) { el.innerHTML = '<div class="empty">No history yet.</div>'; return; }
+  const goal = state.calories.goal || 2000;
+  el.innerHTML = keys.map(date => {
+    const entry = state.calories.logs[date];
+    let total = 0;
+    MEALS.forEach(m => { total += entry[m.key] || 0; });
+    const over = total > goal;
+    const d = new Date(date + 'T00:00:00');
+    const label = d.toLocaleDateString('en-PH', { month:'short', day:'numeric', year:'numeric' });
+    const badge = over
+      ? `<span class="tag tag-no">Over by ${(total-goal).toLocaleString()}</span>`
+      : `<span class="tag tag-ok">Under by ${(goal-total).toLocaleString()}</span>`;
+    return `<div class="cal-history-row">
+      <div>
+        <div style="font-size:13px;color:var(--text)">${label}</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px;">${badge}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span style="font-family:'Nunito',sans-serif;font-weight:800;font-size:15px;">${total.toLocaleString()} kcal</span>
+        <button class="weight-del-btn" onclick="deleteCalDay('${date}')">×</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function deleteCalDay(date) {
+  delete state.calories.logs[date];
+  save(); renderCalSummary(); renderCalHistory();
+  toast('Entry deleted.');
+}
+function backupData() {
+  const blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'kwenta-backup-' + new Date().toISOString().split('T')[0] + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('Backup downloaded!');
+}
+
+function restoreData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const data = JSON.parse(e.target.result);
+      if (!data.accounts) throw new Error('Invalid backup');
+      if (!confirm('This will replace all your current data with the backup. Continue?')) return;
+      state = data;
+      ['cash','landbank','metrobank','gcash'].forEach(k => {
+        if (!state.accounts[k]) state.accounts[k] = {actual:0, stated:0};
+      });
+      if (!state.log) state.log = [];
+      if (!state.dues) state.dues = [];
+      if (!state.needs) state.needs = [];
+      if (!state.plans) state.plans = {};
+      if (!state.weight) state.weight = {goal:null, logs:[]};
+      if (!state.calories) state.calories = {goal:2000, logs:{}};
+      save(); renderDashboard();
+      toast('✅ Data restored successfully!');
+    } catch(err) { toast('❌ Invalid backup file!'); }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+let toastTimer;
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.classList.remove('show'), 2800);
+}
+
+load();
+initCal();
+renderDashboard();
+document.getElementById('weightDate').value = new Date().toISOString().split('T')[0];
+document.getElementById('calDate').value = new Date().toISOString().split('T')[0];
+document.querySelectorAll('.modal-overlay').forEach(o => {
+  o.addEventListener('click', e => { if (e.target === o) o.classList.remove('open'); });
+});
+window.addEventListener('resize', () => {
+  if (document.getElementById('section-weight').classList.contains('active')) renderWeightChart();
+});
+</script>
+</body>
+</html>
